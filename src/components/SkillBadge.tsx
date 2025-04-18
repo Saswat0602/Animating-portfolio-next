@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface SkillBadgeProps {
@@ -8,9 +8,38 @@ interface SkillBadgeProps {
 }
 
 const SkillBadge: React.FC<SkillBadgeProps> = ({ name, index, iconPath }) => {
-  // Generate a default icon path if not provided
-  const defaultIconPath = `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${name.toLowerCase()}/${name.toLowerCase()}-original.svg`;
-  const imageSrc = iconPath || defaultIconPath;
+  const [imageError, setImageError] = useState(false);
+  
+  // Handle Tailwind CSS special case and other common naming issues
+  const getIconPath = () => {
+    // Special cases for icons with non-standard names
+    if (name.toLowerCase() === 'tailwind' || name.toLowerCase() === 'tailwindcss') {
+      return "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg";
+    }
+    
+    if (name.toLowerCase() === 'nextjs' || name.toLowerCase() === 'next.js') {
+      return "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg";
+    }
+    
+    if (name.toLowerCase() === 'aws' || name.toLowerCase() === 'amazonwebservices') {
+      return "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-original-wordmark.svg";
+    }
+    
+    // Use provided path or generate default path
+    if (iconPath) return iconPath;
+    
+    // Try standard naming convention
+    return `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${name.toLowerCase()}/${name.toLowerCase()}-original.svg`;
+  };
+  
+  // Render a fallback for failed images
+  const renderFallback = () => {
+    return (
+      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
+        {name.substring(0, 2).toUpperCase()}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -24,26 +53,17 @@ const SkillBadge: React.FC<SkillBadgeProps> = ({ name, index, iconPath }) => {
       viewport={{ once: true, margin: "-10px" }}
     >
       <div className="relative w-10 h-10 mb-2 overflow-hidden flex items-center justify-center">
-        <img 
-          src={imageSrc} 
-          alt={name} 
-          className="w-8 h-8 object-contain"
-          loading="eager"
-          onError={(e) => {
-            const target = e.currentTarget;
-            
-            // Try alternate format first
-            if (name.toLowerCase() === "aws" || name.toLowerCase() === "amazonwebservices") {
-              target.src = "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg";
-              target.onerror = () => {
-                target.outerHTML = `<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">AWS</div>`;
-              };
-            } else {
-              // Basic fallback for all other icons
-              target.outerHTML = `<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">${name.substring(0, 2).toUpperCase()}</div>`;
-            }
-          }}
-        />
+        {imageError ? (
+          renderFallback()
+        ) : (
+          <img 
+            src={getIconPath()} 
+            alt={name} 
+            className="w-8 h-8 object-contain"
+            loading="eager"
+            onError={() => setImageError(true)}
+          />
+        )}
       </div>
       <span className="text-xs font-medium">
         {name}

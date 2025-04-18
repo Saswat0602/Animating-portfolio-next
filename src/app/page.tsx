@@ -220,9 +220,63 @@ export default function Home() {
 
   // Simple loading spinner
   if (!isMounted) {
-    return <div className="fixed inset-0 bg-background flex items-center justify-center">
-      <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-    </div>;
+    return (
+      <div className="fixed inset-0 bg-background flex flex-col items-center justify-center overflow-hidden">
+        {/* Logo animation */}
+        <div className="relative mb-8">
+          <div className="text-4xl md:text-5xl font-bold relative z-10">
+            <span className="text-primary animate-pulse">Saswat</span>
+            <span className="text-foreground">.dev</span>
+          </div>
+          <div className="absolute -inset-6 bg-primary/5 rounded-full blur-xl animate-pulse"></div>
+        </div>
+        
+        {/* Animated loader */}
+        <div className="flex space-x-2 mb-8">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div 
+              key={i}
+              className="w-3 h-3 rounded-full bg-primary"
+              style={{
+                animation: `bounceLoader 1.5s infinite ${i * 0.1}s`
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Loading text */}
+        <p className="text-sm text-muted-foreground animate-fadeIn">
+          Loading amazing things...
+        </p>
+        
+        {/* Add loading animation keyframes */}
+        <style jsx global>{`
+          @keyframes bounceLoader {
+            0%, 100% {
+              transform: translateY(0);
+              opacity: 0.3;
+            }
+            50% {
+              transform: translateY(-12px);
+              opacity: 1;
+            }
+          }
+          
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 0.7;
+            }
+          }
+          
+          .animate-fadeIn {
+            animation: fadeIn 2s ease-in-out infinite alternate;
+          }
+        `}</style>
+      </div>
+    );
   }
 
   return (
@@ -236,9 +290,39 @@ export default function Home() {
       />
 
       {/* Wrap lazy-loaded components in Suspense */}
-      <Suspense fallback={<div className="h-screen flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-4 border-primary border-t-transparent animate-spin" />
-      </div>}>
+      <Suspense fallback={
+        <div className="h-screen flex flex-col items-center justify-center">
+          <div className="relative mb-4">
+            <div className="text-xl font-semibold text-primary/80">
+              Loading content...
+            </div>
+            <div className="absolute -inset-4 bg-primary/5 rounded-full blur-lg"></div>
+          </div>
+          <div className="flex space-x-1">
+            {[0, 1, 2].map((i) => (
+              <div 
+                key={i}
+                className="w-2 h-2 rounded-full bg-primary/60"
+                style={{
+                  animation: `pulseLoad 1s infinite ${i * 0.15}s`
+                }}
+              />
+            ))}
+          </div>
+          <style jsx global>{`
+            @keyframes pulseLoad {
+              0%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+              }
+              50% {
+                transform: scale(1.2);
+                opacity: 1;
+              }
+            }
+          `}</style>
+        </div>
+      }>
         {/* Hero Section */}
         <OptimizedHeroSection
           name={portfolioData.name}

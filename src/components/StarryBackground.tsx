@@ -2,7 +2,7 @@
 
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef, useMemo } from "react";
-import { motion, useAnimationControls } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Star {
   id: number;
@@ -28,16 +28,19 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [glowingStarIndex, setGlowingStarIndex] = useState(-1);
-  const glowControls = useAnimationControls();
+  
+  const parallaxRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>();
+  const lastMoveTime = useRef<number>(0);
 
   // Memoize stars to avoid recreating them on every render
   const { stars, shootingStars } = useMemo(() => {
     if (typeof window === "undefined") return { stars: [], shootingStars: [] };
     
     // Create fewer stars for better performance
-    const starCount = Math.floor(window.innerWidth * window.innerHeight / 10000) + 50;
+    const screenSize = window.innerWidth * window.innerHeight;
+    const density = screenSize > 1000000 ? 15000 : 20000; // Lower density for larger screens
+    const starCount = Math.min(Math.floor(screenSize / density) + 30, 80); // Cap at 80 stars
     
     const starsArray: Star[] = [];
     for (let i = 0; i < starCount; i++) {
@@ -45,25 +48,26 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 2.5 + 0.5,
-        opacity: Math.random() * 0.7 + 0.3,
-        duration: Math.random() * 4 + 2,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.5 + 0.3,
+        duration: Math.random() * 3 + 3, // Slower, more subtle animation
         delay: Math.random() * 5,
       });
     }
     
-    const count = Math.floor(Math.random() * 3) + 2; // 2-4 shooting stars
+    // Reduce shooting stars to just 1-2
+    const count = Math.min(Math.floor(Math.random() * 2) + 1, 2);
     const shootingStarsArray: ShootingStar[] = [];
     
     for (let i = 0; i < count; i++) {
       shootingStarsArray.push({
         id: i,
         x: Math.random() * 80 + 10,
-        y: Math.random() * 30, // Start from top
-        angle: Math.random() * 45 + 15, // 15-60 degrees angle
+        y: Math.random() * 30,
+        angle: Math.random() * 45 + 15,
         duration: Math.random() * 1.5 + 0.8,
-        delay: Math.random() * 4,
-        size: Math.random() * 2 + 1
+        delay: Math.random() * 10 + 5, // Longer delay for less frequent appearance
+        size: Math.random() * 1.5 + 1
       });
     }
     
@@ -73,70 +77,60 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
   useEffect(() => {
     setMounted(true);
     
+    // More aggressive throttling for mouse movement
     const handleMouseMove = (e: MouseEvent) => {
-      // Throttle mouse move events for better performance
+      const now = performance.now();
+      if (now - lastMoveTime.current < 100) return; // Only update every 100ms
+      
       if (rafRef.current) return;
       
       rafRef.current = requestAnimationFrame(() => {
+        if (parallaxRef.current) {
+          // Less movement for better performance
+          const moveX = (e.clientX - window.innerWidth/2) * 0.01;
+          const moveY = (e.clientY - window.innerHeight/2) * 0.01;
+          
+          parallaxRef.current.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        }
+        
         setMousePosition({
           x: e.clientX,
           y: e.clientY
         });
+        
+        lastMoveTime.current = now;
         rafRef.current = undefined;
       });
     };
-    
-    // Create glowing star effect at intervals
-    const glowInterval = setInterval(() => {
-      // Randomly select a star to glow
-      const randomIndex = Math.floor(Math.random() * stars.length);
-      setGlowingStarIndex(randomIndex);
-      
-      // Animate the glow
-      glowControls.start({
-        scale: [1, 3, 1],
-        opacity: [0.5, 1, 0.5],
-        boxShadow: [
-          "0 0 5px rgba(var(--primary-rgb), 0.7)",
-          "0 0 30px rgba(var(--primary-rgb), 1)",
-          "0 0 5px rgba(var(--primary-rgb), 0.7)"
-        ],
-        transition: {
-          duration: 3,
-          ease: "easeInOut"
-        }
-      });
-    }, 5000); // Every 5 seconds
     
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
     
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
-      clearInterval(glowInterval);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [stars.length, glowControls]);
+  }, []);
 
   if (!mounted) return null;
   
   // Use different colors based on theme
   const starColor = resolvedTheme === "dark" 
-    ? "rgba(255, 255, 255, 0.9)" 
-    : "rgba(0, 35, 80, 0.7)";
+    ? "rgba(255, 255, 255, 0.8)" 
+    : "rgba(0, 35, 80, 0.6)";
   
   const starGlow = resolvedTheme === "dark"
-    ? "0 0 6px rgba(255, 255, 255, 0.8), 0 0 12px rgba(120, 160, 255, 0.4)"
-    : "0 0 4px rgba(0, 60, 200, 0.6)";
+    ? "0 0 4px rgba(255, 255, 255, 0.6)"
+    : "0 0 3px rgba(0, 60, 200, 0.5)";
   
   return (
     <div className={`${className} will-change-transform`}>
-      {/* Main stars */}
-      {stars.map((star, index) => (
-        <motion.div
+      {/* Main stars - static divs instead of motion.divs for better performance */}
+      {stars.map((star) => (
+        <div
           key={`star-${star.id}`}
-          className="absolute rounded-full will-change-transform"
+          className="absolute rounded-full animate-twinkle hardware-accelerated"
           style={{
             left: `${star.x}%`,
             top: `${star.y}%`,
@@ -145,31 +139,23 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
             backgroundColor: starColor,
             boxShadow: starGlow,
             transform: `translate(-50%, -50%)`,
-            willChange: "opacity, transform",
+            opacity: star.opacity,
+            // Use CSS variables for animation durations
+            '--duration': `${star.duration}s`,
+            '--delay': `${star.delay}s`,
             zIndex: -2,
-          }}
-          animate={index === glowingStarIndex ? glowControls : {
-            opacity: [star.opacity * 0.7, star.opacity, star.opacity * 0.7],
-            scale: [0.8, 1, 0.8],
-          }}
-          transition={{
-            duration: star.duration,
-            delay: star.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
+          } as React.CSSProperties}
         />
       ))}
       
-      {/* Shooting stars - reduced number for better performance */}
+      {/* Shooting stars - keep as motion.divs since there are very few */}
       {shootingStars.map((star) => (
         <motion.div
           key={`shooting-${star.id}`}
-          className="absolute will-change-transform"
+          className="absolute hardware-accelerated"
           style={{
             left: `${star.x}%`,
             top: `${star.y}%`,
-            willChange: "transform, opacity",
             zIndex: -1,
           }}
           initial={{ opacity: 0 }}
@@ -182,8 +168,8 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
             duration: star.duration,
             delay: star.delay,
             ease: "easeOut",
-            repeat: 1,
-            repeatDelay: 10 + Math.random() * 20,
+            repeat: Infinity,
+            repeatDelay: 15 + Math.random() * 20, // More time between shooting stars
           }}
         >
           <div 
@@ -192,70 +178,53 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
               width: `${star.size * 20}px`,
               backgroundColor: resolvedTheme === "dark" ? "white" : "#0055bb",
               boxShadow: resolvedTheme === "dark" 
-                ? "0 0 20px 2px rgba(255, 255, 255, 0.8)" 
-                : "0 0 20px 2px rgba(0, 100, 255, 0.8)",
+                ? "0 0 15px 1px rgba(255, 255, 255, 0.7)" 
+                : "0 0 15px 1px rgba(0, 100, 255, 0.7)",
               transform: `rotate(${star.angle}deg)`,
             }}
           />
         </motion.div>
       ))}
       
-      {/* Large glow effect that moves with subtle parallax */}
+      {/* Simplified large glow effect with fewer animations */}
       <div 
+        ref={parallaxRef}
         className="absolute w-full h-full overflow-hidden"
         style={{
-          transform: `translate(${(mousePosition.x - window.innerWidth/2) * 0.02}px, ${(mousePosition.y - window.innerHeight/2) * 0.02}px)`,
           transition: "transform 1s cubic-bezier(0.2, 0.8, 0.2, 1)",
         }}
       >
-        <motion.div
-          className="absolute"
+        <div
+          className="absolute hardware-accelerated"
           style={{
             width: '400px',
             height: '400px',
             borderRadius: '50%',
             background: resolvedTheme === "dark" 
-              ? 'radial-gradient(circle, rgba(100, 150, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)' 
-              : 'radial-gradient(circle, rgba(0, 100, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%)',
+              ? 'radial-gradient(circle, rgba(100, 150, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%)' 
+              : 'radial-gradient(circle, rgba(0, 100, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%)',
             left: '30%',
             top: '20%',
             filter: 'blur(40px)',
             zIndex: -3,
-          }}
-          animate={{
-            scale: [1, 1.5, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "easeInOut"
+            animation: 'glow 15s infinite ease-in-out',
           }}
         />
         
-        <motion.div
-          className="absolute"
+        <div
+          className="absolute hardware-accelerated"
           style={{
             width: '300px',
             height: '300px',
             borderRadius: '50%',
             background: resolvedTheme === "dark" 
-              ? 'radial-gradient(circle, rgba(120, 100, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)' 
-              : 'radial-gradient(circle, rgba(50, 0, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%)',
+              ? 'radial-gradient(circle, rgba(120, 100, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%)' 
+              : 'radial-gradient(circle, rgba(50, 0, 255, 0.06) 0%, rgba(255, 255, 255, 0) 70%)',
             right: '20%',
             bottom: '30%',
             filter: 'blur(30px)',
             zIndex: -3,
-          }}
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.4, 0.7, 0.4],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 5
+            animation: 'glow 20s infinite ease-in-out 5s',
           }}
         />
       </div>
