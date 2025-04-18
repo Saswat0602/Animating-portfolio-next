@@ -32,6 +32,8 @@
     --mouse-x: 0px;
     --mouse-y: 0px;
     --primary-rgb: 59, 130, 246;
+    --background-rgb: 250, 250, 250;
+    --foreground-rgb: 20, 20, 20;
   }
 
   .dark {

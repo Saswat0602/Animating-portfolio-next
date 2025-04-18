@@ -10,6 +10,7 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 // Lazy load non-critical components
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
 const TempoInit = dynamic(() => import('@/components/tempo-init').then(mod => ({ default: mod.TempoInit })), { ssr: false });
+const StarryBackground = dynamic(() => import('@/components/StarryBackground').then(mod => ({ default: mod.StarryBackground })), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -73,6 +74,7 @@ export default function RootLayout({
           enableSystem
         >
           <div className="fixed inset-0 w-full h-full overflow-hidden -z-10 pointer-events-none starry-container">
+            <StarryBackground className="w-full h-full" />
           </div>
           
           {/* Client-side only rendering for the cursor */}

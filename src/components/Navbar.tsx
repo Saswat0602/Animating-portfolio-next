@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { Sun, Moon, Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -20,6 +20,21 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("#about");
   const { theme, setTheme } = useTheme();
+  const [clickedLink, setClickedLink] = useState("");
+  const [hasScrolled, setHasScrolled] = useState(false);
+  
+  // Get scroll progress for animation
+  const { scrollY } = useScroll();
+  const navbarBackground = useTransform(
+    scrollY,
+    [0, 50],
+    ["rgba(var(--background-rgb), 0.7)", "rgba(var(--background-rgb), 0.9)"]
+  );
+  const navbarShadow = useTransform(
+    scrollY,
+    [0, 50],
+    ["0 0 0 rgba(0,0,0,0)", "0 4px 20px rgba(0,0,0,0.1)"]
+  );
 
   // Handle theme toggle
   const toggleTheme = () => {
@@ -33,6 +48,9 @@ const Navbar = () => {
     const handleScroll = () => {
       const sections = navLinks.map((link) => link.href.substring(1));
       const scrollPosition = window.scrollY + 100;
+      
+      // Check if page has scrolled for styles
+      setHasScrolled(window.scrollY > 20);
 
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -55,14 +73,44 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Removed magnetic effect for better navigation
+  // Enhanced scroll function with animation
+  const scrollToSection = (href: string) => {
+    const targetId = href.substring(1);
+    const element = document.getElementById(targetId);
+    
+    if (element) {
+      // Set clicked link for animation
+      setClickedLink(href);
+      
+      // After a short delay, scroll to the section
+      setTimeout(() => {
+        // Use smooth scrolling behavior
+        window.scrollTo({
+          top: element.offsetTop - 80, // Offset for fixed header
+          behavior: "smooth",
+        });
+        
+        // Update active section
+        setActiveSection(href);
+        
+        // Reset clicked link after animation completes
+        setTimeout(() => {
+          setClickedLink("");
+        }, 1000);
+      }, 100);
+    }
+  };
 
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/40"
+      className="sticky top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border/40"
+      style={{ 
+        backgroundColor: navbarBackground,
+        boxShadow: navbarShadow
+      }}
     >
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
@@ -90,14 +138,16 @@ const Navbar = () => {
                 className={`relative px-1 py-2 text-sm font-medium transition-colors ${activeSection === link.href ? "text-primary" : "text-foreground/80 hover:text-foreground"}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  const targetId = link.href.substring(1);
-                  const element = document.getElementById(targetId);
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" });
-                    setActiveSection(link.href);
-                  }
+                  scrollToSection(link.href);
                 }}
               >
+                {clickedLink === link.href ? (
+                  <motion.span
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute -left-2 -right-2 top-0 bottom-0 bg-primary/10 rounded-md -z-10"
+                  />
+                ) : null}
                 {link.label}
                 {activeSection === link.href && (
                   <motion.span
@@ -176,15 +226,23 @@ const Navbar = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setMobileMenuOpen(false);
-                      const targetId = link.href.substring(1);
-                      const element = document.getElementById(targetId);
-                      if (element) {
-                        element.scrollIntoView({ behavior: "smooth" });
-                        setActiveSection(link.href);
-                      }
+                      scrollToSection(link.href);
                     }}
                   >
-                    {link.label}
+                    <motion.div
+                      className="relative"
+                      whileHover={{ x: 5 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    >
+                      {clickedLink === link.href ? (
+                        <motion.span
+                          initial={{ opacity: 0, scaleX: 0 }}
+                          animate={{ opacity: 1, scaleX: 1 }}
+                          className="absolute -left-2 -right-2 top-0 bottom-0 bg-primary/10 rounded-md -z-10 origin-left"
+                        />
+                      ) : null}
+                      {link.label}
+                    </motion.div>
                   </Link>
                 </motion.div>
               ))}

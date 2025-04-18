@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { motion } from 'framer-motion';
 import SkillBadge from './SkillBadge';
-import { frontendSkills, backendSkills, otherSkills, proficiencyLevels } from '../data/skillsData';
+import { frontendSkills, backendSkills, otherSkills } from '../data/skillsData';
 
 interface SkillsSectionProps {
   id?: string;
@@ -170,84 +170,6 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({
             </div>
           </motion.div>
         </div>
-
-        {/* Proficiency level section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          viewport={{ once: true, margin: "-100px" }}
-          className="bg-card rounded-xl p-6 shadow-lg border border-primary/10 hover:border-primary/30 transition-all duration-300"
-          whileHover={{ boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
-        >
-          <h3 className="text-xl font-bold mb-8 inline-block relative group">
-            <span className="group-hover:text-primary transition-colors duration-300">Proficiency</span>
-            <motion.span 
-              className="absolute bottom-0 left-0 h-[2px] bg-primary"
-              initial={{ width: 0 }}
-              whileInView={{ width: "100%" }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true, margin: "-100px" }}
-            />
-          </h3>
-
-          <div className="space-y-8">
-            {proficiencyLevels.map((skill, index) => (
-              <div key={index} className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <motion.p 
-                    className="text-sm font-medium flex items-center"
-                    whileHover={{ x: 3, color: "var(--primary)" }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <motion.span 
-                      className="inline-block w-2 h-2 bg-primary rounded-full mr-2"
-                      animate={{ scale: [1, 1.5, 1] }}
-                      transition={{ 
-                        duration: 1.5, 
-                        repeat: Infinity,
-                        repeatDelay: index * 0.2
-                      }}
-                    />
-                    {skill.name}
-                  </motion.p>
-                  <motion.div
-                    className="flex items-center"
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded">
-                      {skill.percentage}%
-                    </div>
-                  </motion.div>
-                </div>
-                <div className="h-2 bg-muted/50 rounded-full overflow-hidden backdrop-blur relative">
-                  <motion.div
-                    className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: `${skill.percentage}%` }}
-                    transition={{
-                      duration: 1, 
-                      delay: 0.1 + index * 0.1,
-                      ease: "easeOut"
-                    }}
-                    viewport={{ once: true, margin: "-100px" }}
-                  />
-                  <motion.div 
-                    className="absolute top-0 h-full w-full bg-white/20"
-                    animate={{ x: ["-100%", "100%"] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "linear",
-                      delay: index * 0.2
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
       </div>
     </section>
   );
