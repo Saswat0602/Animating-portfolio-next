@@ -5,27 +5,8 @@ export interface TechIcon {
   src: string;
 }
 
-// Fixed positions for much faster loading without calculations
-const FIXED_POSITIONS = [
-  { x: 75, y: 20 },
-  { x: 25, y: 65 },
-  { x: 85, y: 75 },
-  { x: 15, y: 25 },
-  { x: 40, y: 35 },
-  { x: 60, y: 50 },
-  { x: 30, y: 85 },
-  { x: 50, y: 15 },
-  { x: 20, y: 40 },
-  { x: 70, y: 60 },
-  { x: 45, y: 75 },
-  { x: 80, y: 45 },
-  { x: 35, y: 20 },
-  { x: 65, y: 85 }
-];
 
-// Pre-optimized tech icons generation for faster loading
 export const generateTechIcons = (): TechIcon[] => {
-  // Core technologies that should always appear - with fixed positions
   const icons: TechIcon[] = [
     { name: "react", x: 75, y: 20, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
     { name: "typescript", x: 25, y: 65, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
@@ -41,7 +22,6 @@ export const generateTechIcons = (): TechIcon[] => {
     { name: "firebase", x: 50, y: 15, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-plain.svg" },
   ];
 
-  // Additional technologies with pre-defined positions
   const extraIcons: TechIcon[] = [
     { name: "javascript", x: 20, y: 40, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" },
     { name: "html", x: 70, y: 60, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" },
@@ -51,7 +31,6 @@ export const generateTechIcons = (): TechIcon[] => {
     { name: "docker", x: 65, y: 85, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" },
   ];
   
-  // Add fixed number of extra icons instead of random selection
   icons.push(...extraIcons.slice(0, 6));
   
   return icons;

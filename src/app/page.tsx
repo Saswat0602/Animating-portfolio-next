@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
-import {
-  useScroll,
-  useSpring,
-} from "framer-motion";
+import { useScroll } from "framer-motion";
 
 
 const SkillsSection = lazy(() => import("../components/SkillsSection"));
@@ -79,13 +76,6 @@ export default function Home() {
     : false;
 
   const { scrollYProgress } = useScroll();
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: prefersReducedMotion ? 170 : 100,
-    damping: prefersReducedMotion ? 40 : 30,
-    restDelta: 0.001
-  });
-
-
 
   if (!isMounted) {
     return (
