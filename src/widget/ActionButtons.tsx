@@ -5,12 +5,7 @@ import {
     motion,
     useAnimation,
     useInView as framerUseInView,
-    AnimatePresence,
-    useMotionValue,
-    useSpring,
-    useTransform,
-    useScroll,
-    useAnimationControls,
+
 } from "framer-motion";
 
 

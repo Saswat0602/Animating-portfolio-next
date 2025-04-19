@@ -14,6 +14,8 @@ import DayTimeParticles from "@/widget/DayTimeParticles";
 import ActionButtons from "@/widget/ActionButtons";
 import FloatingTechIcons from "@/widget/FloatingTechIcons";
 import Meteor from "@/widget/Meteor";
+import NameAndTitle from "@/widget/NameAndTitle";
+import Particle from "@/widget/Particle";
 
 interface HeroSectionProps {
   name?: string;
@@ -22,65 +24,16 @@ interface HeroSectionProps {
   backgroundPattern?: boolean;
 }
 
-// Interface for Particle component
-interface ParticleProps {
-  posX: number;
-  posY: number;
-  size: number;
-  color: string;
-}
-
-// Interface for IntroText component
 interface IntroTextProps {
   text: string;
   className?: string;
 }
 
-// Add MousePosition interface if it doesn't exist
 interface MousePosition {
   x: number;
   y: number;
 }
 
-// Particle component for React Bits style effect
-const Particle: React.FC<ParticleProps> = ({ posX, posY, size, color }) => {
-  // Random offset values for more organic movement
-  const xOffset = Math.random() * 3 - 1.5;
-  const yOffset = Math.random() * 3 - 1.5;
-  const duration = 8 + Math.random() * 6; // Random duration between 8-14s
-
-  return (
-    <motion.div
-      className="absolute rounded-full"
-      style={{
-        backgroundColor: color,
-        width: size,
-        height: size,
-        left: `${posX}%`,
-        top: `${posY}%`,
-        zIndex: 0,
-      }}
-      initial={{
-        opacity: 0,
-        scale: 0.8
-      }}
-      animate={{
-        x: [0, xOffset * 20, -xOffset * 15, xOffset * 25, 0],
-        y: [0, yOffset * 25, -yOffset * 20, yOffset * 15, 0],
-        opacity: [0.7, 0.9, 0.6, 0.8, 0.7],
-        scale: [0.8, 1.1, 0.9, 1.2, 0.8]
-      }}
-      transition={{
-        duration: duration,
-        repeat: Infinity,
-        repeatType: "loop",
-        ease: "easeInOut"
-      }}
-    />
-  );
-};
-
-// Shape blur component for card hover effect
 const ShapeBlur = () => {
   interface TransformObject {
     x: number;
@@ -144,47 +97,6 @@ const ShapeBlur = () => {
   );
 };
 
-// Optimize mouse movement with debounce and RAF
-const useSmoothMousePosition = () => {
-  const mousePositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const smoothPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const rafRef = useRef<number>();
-
-  // Set up event listener only once
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      // Skip state updates entirely, just update the ref directly
-      mousePositionRef.current = { x: e.clientX, y: e.clientY };
-    };
-
-    // Use passive event listener for better performance
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-
-    // Start RAF loop to smooth mouse position without re-renders
-    const updateSmoothPosition = () => {
-      // Apply easing using refs only, no state updates
-      smoothPositionRef.current = {
-        x: smoothPositionRef.current.x + (mousePositionRef.current.x - smoothPositionRef.current.x) * 0.2,
-        y: smoothPositionRef.current.y + (mousePositionRef.current.y - smoothPositionRef.current.y) * 0.2
-      };
-
-      rafRef.current = requestAnimationFrame(updateSmoothPosition);
-    };
-
-    rafRef.current = requestAnimationFrame(updateSmoothPosition);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  return {
-    position: mousePositionRef, // Return the ref directly
-    smoothPosition: smoothPositionRef // Return the ref directly
-  };
-};
-
 
 
 function IntroText({ text, className }: IntroTextProps) {
@@ -241,96 +153,6 @@ function IntroText({ text, className }: IntroTextProps) {
 }
 
 
-
-// Star component for night mode effect
-const Star = ({ size, top, left, delay, duration }: { size: number; top: string; left: string; delay: number; duration: number }) => {
-  return (
-    <motion.div
-      className="absolute rounded-full bg-white"
-      style={{
-        width: size,
-        height: size,
-        top,
-        left,
-      }}
-      animate={{
-        opacity: [0.1, 0.8, 0.1],
-        scale: [0.8, 1.2, 0.8],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        repeatType: "loop",
-      }}
-    />
-  );
-};
-
-const NameAndTitle = ({ name, title }: { name: string; title: string }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  // Simpler detection of when the component is in view without heavy framer-motion dependencies
-  useEffect(() => {
-    if (!ref.current) return;
-
-    // Use IntersectionObserver API for better performance
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setIsVisible(true);
-        observer.disconnect(); // Only need to detect once
-      }
-    }, { threshold: 0.1 });
-
-    observer.observe(ref.current);
-
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className="relative py-2">
-      {/* Background effect with simple CSS transition instead of motion component */}
-      <div
-        className="absolute -inset-10 bg-primary rounded-full"
-        style={{
-          opacity: isVisible ? 0.1 : 0,
-          filter: 'blur(60px)',
-          transform: `scale(${isVisible ? 1 : 0})`,
-          transition: 'opacity 1.5s ease-out, transform 1.5s ease-out',
-          transitionDelay: '0.2s'
-        }}
-      />
-
-      <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-2 relative">
-        {/* Use a single span with CSS transitions for better performance */}
-        <span
-          className="block"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: `translateY(${isVisible ? 0 : '50px'})`,
-            transition: 'opacity 0.6s ease-out, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)',
-          }}
-        >
-          {name}
-        </span>
-      </h1>
-
-      <h2
-        className="text-lg md:text-xl lg:text-2xl text-muted-foreground font-medium relative"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          transform: `scale(${isVisible ? 1 : 0.9})`,
-          transition: 'opacity 0.8s ease-out, transform 0.8s ease-out',
-          transitionDelay: '0.3s'
-        }}
-      >
-        {title}
-      </h2>
-    </div>
-  );
-};
-
 // Optimize the HeroSection component to avoid heavy initialization
 const HeroSection = ({
   name = 'Saswat Ranjan',
@@ -348,7 +170,6 @@ const HeroSection = ({
 
   const isTextInView = framerUseInView(textRef, { once: false, amount: 0.3 });
   const mousePositionRef = useRef<MousePosition>({ x: 0, y: 0 });
-  const { position, smoothPosition } = useSmoothMousePosition();
 
   const [techIcons, setTechIcons] = useState<TechIcon[]>([]);
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
@@ -481,16 +302,15 @@ const HeroSection = ({
     return p;
   }, []);
 
-  const meteors = useMemo(
+  const stars = useMemo(
     () =>
-      Array.from({ length: 4 }, (_, i) => ({
+      Array.from({ length: 40 }, (_, i) => ({
         id: i,
-        top: `${Math.random() * 80}%`,
-        left: `${Math.random() * 80}%`,
-        size: Math.random() * 80 + 30,
-        //  angle: Math.random() * 45 - 20, // Slight diagonal
-
-        delay: Math.random() * 10,
+        size: Math.random() * 2 + 1,
+        top: `${Math.random() * 100}%`,
+        left: `${Math.random() * 100}%`,
+        delay: Math.random() * 5,
+        duration: Math.random() * 2 + 1,
       })),
     []
   );
@@ -521,8 +341,6 @@ const HeroSection = ({
               width={1} // thin like a shooting star
             />
           ))}
-
-
         </div>
       )}
       {animationsEnabled && theme !== 'dark' && <DayTimeParticles />}
