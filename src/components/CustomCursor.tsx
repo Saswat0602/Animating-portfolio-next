@@ -20,32 +20,38 @@ const CustomCursor: React.FC<CustomCursorProps> = ({ enabled = true }) => {
   if (isMobile || !enabled || prefersReducedMotion) return null;
 
   // Use refs for direct DOM manipulation
-  const cursorDotRef = useRef<HTMLDivElement>(null);
+  const cursorOuterRef = useRef<HTMLDivElement>(null);
+  const cursorInnerRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     // Skip on SSR
     if (typeof window === 'undefined') return;
     
-    // Get the cursor element
-    const cursor = cursorDotRef.current;
-    if (!cursor) return;
+    // Get the cursor elements
+    const cursorOuter = cursorOuterRef.current;
+    const cursorInner = cursorInnerRef.current;
+    if (!cursorOuter || !cursorInner) return;
     
     // Initialize cursor
-    cursor.style.opacity = '0';
+    cursorOuter.style.opacity = '0';
+    cursorInner.style.opacity = '0';
     
     // Simple non-throttled mouse move handler
     const handleMouseMove = (e: MouseEvent) => {
-      if (!cursor) return;
+      if (!cursorOuter || !cursorInner) return;
       
       // Set opacity once visible
-      if (cursor.style.opacity === '0') {
-        cursor.style.opacity = '1';
+      if (cursorOuter.style.opacity === '0') {
+        cursorOuter.style.opacity = '1';
+        cursorInner.style.opacity = '1';
       }
       
       // Simple positioning
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
+      cursorOuter.style.left = `${e.clientX}px`;
+      cursorOuter.style.top = `${e.clientY}px`;
+      cursorInner.style.left = `${e.clientX}px`;
+      cursorInner.style.top = `${e.clientY}px`;
     };
     
     // Add event listener
@@ -59,19 +65,33 @@ const CustomCursor: React.FC<CustomCursorProps> = ({ enabled = true }) => {
 
   return (
     <>
+      {/* Outer circle */}
       <div 
-        ref={cursorDotRef}
+        ref={cursorOuterRef}
         className="fixed top-0 left-0 pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: '8px',
-          height: '8px',
+          width: '24px',
+          height: '24px',
           borderRadius: '50%',
-          backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+          border: `1px solid ${resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'}`,
+          transition: 'opacity 0.2s, width 0.2s, height 0.2s',
+        }}
+      />
+      
+      {/* Inner dot */}
+      <div
+        ref={cursorInnerRef}
+        className="fixed top-0 left-0 pointer-events-none z-[10000] -translate-x-1/2 -translate-y-1/2"
+        style={{
+          width: '4px',
+          height: '4px',
+          borderRadius: '50%',
+          backgroundColor: resolvedTheme === 'dark' ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
           transition: 'opacity 0.2s',
         }}
       />
 
-      <style jsx global>{`
+      <style>{`
         body {
           cursor: ${enabled ? 'none' : 'auto'};
         }

@@ -354,7 +354,8 @@ const FloatingTechIcons: React.FC<FloatingTechIconsProps> = ({ techIcons, mouseP
                   // Special handling for AWS icon
                   if (icon.name === "aws") {
                     imgElement.src = "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg";
-                  } else {
+                  }
+                  else {
                     imgElement.src = `https://via.placeholder.com/50?text=${icon.name}`;
                   }
                 }}
@@ -851,7 +852,7 @@ const HeroContent = () => {
         className="mb-8 max-w-3xl text-base text-muted-foreground sm:text-lg md:mb-10 md:text-xl"
       >
         <span>{text}</span>
-        <Cursor cursorStyle="|" cursorColor="#3b82f6" />
+        <Cursor cursorStyle="●" cursorColor="#3b82f6" />
       </motion.div>
       
       <motion.div variants={itemVariants} className="w-full max-w-md mx-auto">
@@ -1426,6 +1427,7 @@ const StarryHeroBackground = () => {
     
     // Use fewer stars and limit DOM elements
     const starCount = Math.min(window.innerWidth < 768 ? 30 : 45, 45); // Even fewer stars on mobile
+    const stars: HTMLElement[] = []; // Array to store references to stars
     
     // Create stars once at component mount instead of repeatedly
     for (let i = 0; i < starCount; i++) {
@@ -1451,10 +1453,47 @@ const StarryHeroBackground = () => {
         will-change: opacity;
         animation: starPulse ${duration}s ease-in-out infinite alternate;
         animation-delay: ${delay}s;
+        transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
       `;
       
       container.appendChild(star);
+      stars.push(star);
     }
+    
+    // Function to make random stars blink
+    const makeRandomStarsBlink = () => {
+      // Number of stars to blink (between 1-5 stars)
+      const numToBlink = Math.floor(Math.random() * 5) + 1;
+      
+      for (let i = 0; i < numToBlink; i++) {
+        // Select a random star
+        const randomIndex = Math.floor(Math.random() * stars.length);
+        const star = stars[randomIndex];
+        
+        if (star && container.contains(star)) {
+          // Save original styles
+          const originalOpacity = star.style.opacity;
+          const originalBoxShadow = star.style.boxShadow;
+          
+          // Blink effect
+          star.style.opacity = '1';
+          star.style.transform = 'scale(1.5)';
+          star.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.9)';
+          
+          // Return to normal after a short delay
+          setTimeout(() => {
+            if (star && container.contains(star)) {
+              star.style.opacity = originalOpacity;
+              star.style.transform = 'scale(1)';
+              star.style.boxShadow = originalBoxShadow;
+            }
+          }, 300);
+        }
+      }
+    };
+    
+    // Set interval to make random stars blink
+    const blinkInterval = setInterval(makeRandomStarsBlink, 2000);
     
     // Limit the number of shooting stars and throttle their creation
     let shootingStarCount = 0;
@@ -1561,12 +1600,13 @@ const StarryHeroBackground = () => {
     return () => {
       clearInterval(shootingStarInterval);
       clearInterval(meteorShowerInterval);
+      clearInterval(blinkInterval);
     };
   }, []);
   
   return (
     <div ref={containerRef} className="absolute inset-0 overflow-hidden">
-      <style jsx global>{`
+      <style>{`
         @keyframes starPulse {
           0% { opacity: 0.3; transform: scale(0.8); }
           100% { opacity: 0.8; transform: scale(1.1); }

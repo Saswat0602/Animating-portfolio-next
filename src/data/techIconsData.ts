@@ -30,7 +30,6 @@ export const generateTechIcons = (): TechIcon[] => {
     { name: "react", x: 75, y: 20, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
     { name: "typescript", x: 25, y: 65, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" },
     { name: "nextjs", x: 85, y: 75, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" },
-    { name: "tailwind", x: 15, y: 25, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
     {
       name: "aws",
       x: 40,

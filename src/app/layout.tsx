@@ -66,8 +66,14 @@ export default function RootLayout({
         {/* Add resource hints to improve performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Add meta tag to strip unknown attributes */}
+        <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
       </head>
-      <body className={cn("min-h-screen bg-background antialiased", inter.className)}>
+      <body 
+        className={cn("min-h-screen bg-background antialiased", inter.className)}
+        suppressHydrationWarning
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

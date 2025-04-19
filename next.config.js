@@ -6,6 +6,7 @@ const nextConfig = {
             'images.unsplash.com',
             'cdn.jsdelivr.net',
             'raw.githubusercontent.com',
+            'w7.pngwing.com',
         ],
     }
 };

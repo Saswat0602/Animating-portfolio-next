@@ -410,7 +410,7 @@ const OptimizedHeroSection = ({
   return (
     <section
       ref={heroRef}
-      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-background py-20 px-4 sm:px-6 lg:px-8"
+      className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-background pt-28 pb-20 px-4 sm:px-6 lg:px-8"
     >
       {/* Simplified background */}
       <MinimalBackground theme={theme} />
@@ -434,7 +434,7 @@ const OptimizedHeroSection = ({
       {/* Main content */}
       <div
         ref={textRef}
-        className="relative z-10 max-w-4xl mx-auto text-center space-y-8"
+        className="relative z-10 max-w-4xl mx-auto text-center space-y-8 mt-10"
       >
         {/* Welcome badge */}
         <div 
@@ -457,7 +457,7 @@ const OptimizedHeroSection = ({
         {/* Introduction text */}
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-6 leading-relaxed">
           <span>{text}</span>
-          <Cursor cursorStyle="|" cursorColor="#3b82f6" />
+          <Cursor cursorStyle="●" cursorColor="#3b82f6" />
         </p>
         
         {/* Action buttons */}
@@ -503,7 +503,7 @@ const OptimizedHeroSection = ({
       </div>
       
       {/* Add some global styles for animations */}
-      <style jsx global>{`
+      <style>{`
         @keyframes float-slow {
           0%, 100% { transform: translateY(0) translateX(0); }
           50% { transform: translateY(-15px) translateX(15px); }

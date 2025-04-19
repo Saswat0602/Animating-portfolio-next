@@ -250,7 +250,7 @@ export default function Home() {
         </p>
         
         {/* Add loading animation keyframes */}
-        <style jsx global>{`
+        <style>{`
           @keyframes bounceLoader {
             0%, 100% {
               transform: translateY(0);
@@ -309,7 +309,7 @@ export default function Home() {
               />
             ))}
           </div>
-          <style jsx global>{`
+          <style>{`
             @keyframes pulseLoad {
               0%, 100% {
                 transform: scale(0.8);

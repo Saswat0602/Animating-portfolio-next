@@ -126,11 +126,11 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
   
   return (
     <div className={`${className} will-change-transform`}>
-      {/* Main stars - static divs instead of motion.divs for better performance */}
+      {/* Main stars with direct inline animation */}
       {stars.map((star) => (
         <div
           key={`star-${star.id}`}
-          className="absolute rounded-full animate-twinkle hardware-accelerated"
+          className="absolute rounded-full hardware-accelerated"
           style={{
             left: `${star.x}%`,
             top: `${star.y}%`,
@@ -140,11 +140,13 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
             boxShadow: starGlow,
             transform: `translate(-50%, -50%)`,
             opacity: star.opacity,
-            // Use CSS variables for animation durations
-            '--duration': `${star.duration}s`,
-            '--delay': `${star.delay}s`,
+            animationName: 'starTwinkle',
+            animationDuration: `${star.duration}s`,
+            animationTimingFunction: 'ease-in-out',
+            animationIterationCount: 'infinite',
+            animationDelay: `${star.delay}s`,
             zIndex: -2,
-          } as React.CSSProperties}
+          }}
         />
       ))}
       
@@ -186,6 +188,48 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
         </motion.div>
       ))}
       
+      {/* Daytime elements - only visible in light mode */}
+      {resolvedTheme === "light" && (
+        <>
+          {/* Strong visible background for light mode */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-50/70 to-background/40 -z-10"></div>
+          
+          {/* Floating clouds for light theme - with increased opacity */}
+          <div className="absolute top-[10%] left-[15%] w-64 h-24 opacity-60 animate-float-very-slow">
+            <div className="absolute w-40 h-40 bg-blue-200 rounded-full blur-xl transform translate-x-12"></div>
+            <div className="absolute w-32 h-32 bg-blue-100 rounded-full blur-xl transform translate-x-4 translate-y-4"></div>
+            <div className="absolute w-36 h-36 bg-blue-50 rounded-full blur-xl transform translate-x-24 translate-y-2"></div>
+          </div>
+          
+          <div className="absolute top-[30%] right-[20%] w-52 h-32 opacity-50 animate-float-slow">
+            <div className="absolute w-32 h-32 bg-blue-100 rounded-full blur-xl"></div>
+            <div className="absolute w-28 h-28 bg-blue-50 rounded-full blur-xl transform translate-x-10 translate-y-2"></div>
+          </div>
+          
+          <div className="absolute bottom-[20%] left-[25%] w-48 h-24 opacity-40 animate-float-medium">
+            <div className="absolute w-30 h-30 bg-blue-100 rounded-full blur-xl"></div>
+            <div className="absolute w-24 h-24 bg-blue-50 rounded-full blur-xl transform translate-x-8 translate-y-4"></div>
+          </div>
+          
+          {/* Sun glow for light theme */}
+          <div 
+            className="absolute top-[8%] right-[15%] w-60 h-60 rounded-full animate-pulse-slow"
+            style={{
+              background: 'radial-gradient(circle, rgba(255, 200, 100, 0.4) 0%, rgba(255, 255, 255, 0) 70%)',
+              filter: 'blur(8px)',
+            }}
+          ></div>
+          
+          {/* Visible grid pattern for light mode */}
+          <div className="absolute inset-0 opacity-[0.08]" 
+            style={{ 
+              backgroundImage: 'linear-gradient(to right, rgba(100,150,255,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(100,150,255,0.4) 1px, transparent 1px)',
+              backgroundSize: '40px 40px'
+            }}
+          ></div>
+        </>
+      )}
+      
       {/* Simplified large glow effect with fewer animations */}
       <div 
         ref={parallaxRef}
@@ -202,7 +246,7 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
             borderRadius: '50%',
             background: resolvedTheme === "dark" 
               ? 'radial-gradient(circle, rgba(100, 150, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%)' 
-              : 'radial-gradient(circle, rgba(0, 100, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%)',
+              : 'radial-gradient(circle, rgba(0, 100, 255, 0.14) 0%, rgba(255, 255, 255, 0) 70%)',
             left: '30%',
             top: '20%',
             filter: 'blur(40px)',
@@ -218,8 +262,8 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
             height: '300px',
             borderRadius: '50%',
             background: resolvedTheme === "dark" 
-              ? 'radial-gradient(circle, rgba(120, 100, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%)' 
-              : 'radial-gradient(circle, rgba(50, 0, 255, 0.06) 0%, rgba(255, 255, 255, 0) 70%)',
+              ? 'radial-gradient(circle, rgba(120, 100, 255, 0.16) 0%, rgba(0, 0, 0, 0) 70%)' 
+              : 'radial-gradient(circle, rgba(50, 0, 255, 0.12) 0%, rgba(255, 255, 255, 0) 70%)',
             right: '20%',
             bottom: '30%',
             filter: 'blur(30px)',
@@ -228,6 +272,43 @@ export const StarryBackground = ({ className = "" }: { className?: string }) => 
           }}
         />
       </div>
+      
+      {/* Add star animations keyframes directly in the component */}
+      <style>{`
+        @keyframes starTwinkle {
+          0%, 100% { 
+            opacity: 0.3; 
+            transform: translate(-50%, -50%) scale(0.8);
+          }
+          50% { 
+            opacity: 1; 
+            transform: translate(-50%, -50%) scale(1.2);
+          }
+        }
+        
+        @keyframes float-very-slow {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          25% { transform: translateY(15px) translateX(10px); }
+          50% { transform: translateY(20px) translateX(-15px); }
+          75% { transform: translateY(5px) translateX(-20px); }
+        }
+        
+        @keyframes float-slow {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          50% { transform: translateY(-15px) translateX(15px); }
+        }
+        
+        @keyframes float-medium {
+          0%, 100% { transform: translateY(0) translateX(0); }
+          33% { transform: translateY(10px) translateX(-10px); }
+          66% { transform: translateY(-8px) translateX(8px); }
+        }
+        
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 0.3; transform: scale(1); }
+          50% { opacity: 0.45; transform: scale(1.1); }
+        }
+      `}</style>
     </div>
   );
 }; 

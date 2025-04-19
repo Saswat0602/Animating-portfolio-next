@@ -20,6 +20,7 @@ const Navbar = () => {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("#about-section");
+  const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
   
   // Handle theme toggle
@@ -35,6 +36,9 @@ const Navbar = () => {
     const handleScroll = () => {
       // Find the section currently in view
       const scrollY = window.scrollY;
+      
+      // Update scrolled state for enhanced styling
+      setScrolled(scrollY > 20);
       
       // Simple approach - find the closest section
       for (const link of navLinks) {
@@ -120,9 +124,13 @@ const Navbar = () => {
 
   return (
     <header 
-      className="sticky top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-border/40 bg-background/90"
+      className={`fixed top-0 left-0 right-0 z-[9999] w-full transition-all duration-300 ${
+        scrolled 
+          ? "bg-background/95 backdrop-blur-md shadow-lg py-2 border-b border-primary/10" 
+          : "bg-background/90 backdrop-blur-sm py-3"
+      }`}
     >
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
         <div className="text-xl font-bold">
           <Link href="/" className="flex items-center gap-2">
@@ -140,7 +148,11 @@ const Navbar = () => {
             >
               <Link
                 href={link.href}
-                className={`relative px-1 py-2 text-sm font-medium transition-colors ${activeSection === link.href ? "text-primary" : "text-foreground/80 hover:text-foreground"}`}
+                className={`relative px-1 py-2 text-sm font-medium transition-colors ${
+                  activeSection === link.href 
+                    ? "text-primary font-semibold" 
+                    : "text-foreground/80 hover:text-foreground hover:text-primary/90"
+                }`}
                 onClick={(e) => {
                   e.preventDefault();
                   scrollToSection(link.href);
