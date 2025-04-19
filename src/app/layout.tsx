@@ -12,8 +12,8 @@ const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: f
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
 export const metadata: Metadata = {
-  title: "Saswat Ranjan | Front End Developer",
-  description: "Front-end React Developer & MERN Stack Developer based in Bhubaneswar.",
+  title: "Saswat.Dev",
+  description: "MERN/APP Developer",
 };
 
 // Preload critical tech icons to prevent layout shifts during initial load
