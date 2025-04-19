@@ -21,6 +21,7 @@ const Navbar = () => {
   const [activeSection, setActiveSection] = useState("#about-section");
   const [scrolled, setScrolled] = useState(false);
   const { theme, setTheme } = useTheme();
+  const mobileNavRef = useRef<HTMLDivElement>(null);
 
   // Handle theme toggle
   const toggleTheme = () => {
@@ -59,76 +60,93 @@ const Navbar = () => {
     // Initial check
     handleScroll();
 
+    // Close mobile menu when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuOpen && mobileNavRef.current && !mobileNavRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [mobileMenuOpen]);
 
   const scrollToSection = (href: string) => {
-    const targetId = href.substring(1);
+    try {
+      const targetId = href.substring(1);
 
-    // Try to find element by ID first
-    let element = document.getElementById(targetId);
+      // Try to find element by ID first
+      let element = document.getElementById(targetId);
 
-    // If element not found, try more approaches
-    if (!element) {
-      // Try with alternative ID formats (some sections might use -section suffix or not)
-      if (targetId.endsWith("-section")) {
-        element = document.getElementById(targetId.replace("-section", ""));
-      } else {
-        element = document.getElementById(`${targetId}-section`);
-      }
-
-      // If still not found, try using querySelector as a last resort
+      // If element not found, try more approaches
       if (!element) {
-        // Try to find by a section with a matching data attribute or class
-        element = document.querySelector(`section[id*="${targetId}"], div[id*="${targetId}"]`) as HTMLElement;
+        // Try with alternative ID formats (some sections might use -section suffix or not)
+        if (targetId.endsWith("-section")) {
+          element = document.getElementById(targetId.replace("-section", ""));
+        } else {
+          element = document.getElementById(`${targetId}-section`);
+        }
 
-        // If nothing works, look for the closest match
+        // If still not found, try using querySelector as a last resort
         if (!element) {
-          const allSections = document.querySelectorAll('section, div[id]');
-          for (let i = 0; i < allSections.length; i++) {
-            const section = allSections[i] as HTMLElement;
-            if (section.id && section.id.toLowerCase().includes(targetId.toLowerCase().replace('-section', ''))) {
-              element = section;
-              break;
+          // Try to find by a section with a matching data attribute or class
+          element = document.querySelector(`section[id*="${targetId}"], div[id*="${targetId}"]`) as HTMLElement;
+
+          // If nothing works, look for the closest match
+          if (!element) {
+            const allSections = document.querySelectorAll('section, div[id]');
+            for (let i = 0; i < allSections.length; i++) {
+              const section = allSections[i] as HTMLElement;
+              if (section.id && section.id.toLowerCase().includes(targetId.toLowerCase().replace('-section', ''))) {
+                element = section;
+                break;
+              }
             }
           }
         }
       }
-    }
 
-    if (element) {
-      // Simple scroll to element with offset
-      const offset = 80; // Offset for the sticky header
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      if (element) {
+        // Close mobile menu immediately for better UX
+        setMobileMenuOpen(false);
+        
+        // Simple scroll to element with offset
+        const offset = 80; // Offset for the sticky header
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - offset;
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth"
-      });
-
-      // Set active section immediately for visual feedback
-      setActiveSection(href);
-
-      // Log for debugging
-      console.log(`Scrolled to: ${element.id || 'unnamed element'}`);
-    } else {
-      console.warn(`Element with ID "${targetId}" not found`);
+        // Force a small delay to ensure mobile menu has time to close
+        setTimeout(() => {
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+          
+          // Set active section immediately for visual feedback
+          setActiveSection(href);
+          
+          // Log for debugging
+          console.log(`Scrolled to: ${element?.id || 'unnamed element'}`);
+        }, 10);
+      } else {
+        console.warn(`Element with ID "${targetId}" not found`);
+      }
+    } catch (error) {
+      console.error("Error in scrollToSection:", error);
     }
   };
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-[90] w-full transition-all duration-300 ${scrolled
-          ? "bg-background/95 backdrop-blur-md shadow-lg py-2 border-b border-primary/10"
-          : "bg-background/90 backdrop-blur-sm py-3"
-        }`}
+      className="fixed top-0 left-0 right-0 z-[100] w-full transition-all duration-300 bg-background/95 backdrop-blur-md shadow-lg py-2 border-b border-primary/10"
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="text-xl font-bold">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center">
             <span className="text-primary">Saswat</span>
             <span className="text-foreground">.dev</span>
           </Link>
@@ -195,6 +213,7 @@ const Navbar = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
+            ref={mobileNavRef}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -209,17 +228,12 @@ const Navbar = () => {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Link
-                    href={link.href}
-                    className={`block py-2 text-base font-medium ${activeSection === link.href ? "text-primary" : "text-foreground/80"}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setMobileMenuOpen(false);
-                      scrollToSection(link.href);
-                    }}
+                  <button
+                    className={`block w-full text-left py-2 text-base font-medium ${activeSection === link.href ? "text-primary" : "text-foreground/80"}`}
+                    onClick={() => scrollToSection(link.href)}
                   >
                     {link.label}
-                  </Link>
+                  </button>
                 </motion.div>
               ))}
             </nav>

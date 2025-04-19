@@ -5,7 +5,6 @@ import "./globals.css";
 import dynamic from 'next/dynamic';
 import { cn } from "@/lib/utils";
 import Script from "next/script";
-
 // Lazy load non-critical components
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
 
