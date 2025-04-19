@@ -7,7 +7,6 @@ import {
   useInView as framerUseInView,
 } from "framer-motion";
 import { useTheme } from 'next-themes';
-import { throttle } from "lodash";
 import { generateTechIcons, TechIcon } from "@/data/techIconsData";
 import StarryHeroBackground from "@/widget/StarryHeroBackground";
 import DayTimeParticles from "@/widget/DayTimeParticles";
@@ -16,6 +15,8 @@ import FloatingTechIcons from "@/widget/FloatingTechIcons";
 import Meteor from "@/widget/Meteor";
 import NameAndTitle from "@/widget/NameAndTitle";
 import Particle from "@/widget/Particle";
+import ParallaxLayer from "@/widget/ParallaxLayer";
+import IntroText from "@/widget/IntroText";
 
 interface HeroSectionProps {
   name?: string;
@@ -24,140 +25,16 @@ interface HeroSectionProps {
   backgroundPattern?: boolean;
 }
 
-interface IntroTextProps {
-  text: string;
-  className?: string;
-}
 
 interface MousePosition {
   x: number;
   y: number;
 }
 
-const ShapeBlur = () => {
-  interface TransformObject {
-    x: number;
-    y: number;
-    transition: {
-      duration: number;
-      ease: string;
-      delay: number;
-    };
-  }
-
-  const calculateTransform = (mousePosition: { x: number, y: number }, intensity: number, delay: number): TransformObject => {
-    return {
-      x: (window.innerWidth / 2 - mousePosition.x) * intensity,
-      y: (window.innerHeight / 2 - mousePosition.y) * intensity,
-      transition: {
-        duration: 0.8,
-        ease: "easeOut",
-        delay
-      }
-    };
-  };
-
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [transform1, setTransform1] = useState<TransformObject>({ x: 0, y: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0 } });
-  const [transform2, setTransform2] = useState<TransformObject>({ x: 0, y: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0.05 } });
-  const [transform3, setTransform3] = useState<TransformObject>({ x: 0, y: 0, transition: { duration: 0.8, ease: "easeOut", delay: 0.1 } });
-
-  useEffect(() => {
-    const handleMouseMove = throttle((e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-      setTransform1(calculateTransform({ x: e.clientX, y: e.clientY }, 0.015, 0));
-      setTransform2(calculateTransform({ x: e.clientX, y: e.clientY }, 0.025, 0.05));
-      setTransform3(calculateTransform({ x: e.clientX, y: e.clientY }, 0.035, 0.1));
-    }, 50);
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
-  return (
-    <>
-      <motion.div
-        className="absolute left-[15%] top-[15%] h-80 w-80 rounded-full bg-primary/30 blur-[100px]"
-        animate={{ x: transform1.x, y: transform1.y }}
-        transition={transform1.transition}
-      />
-      <motion.div
-        className="absolute bottom-[20%] right-[20%] h-80 w-80 rounded-full bg-secondary/20 blur-[120px]"
-        animate={{ x: transform2.x, y: transform2.y }}
-        transition={transform2.transition}
-      />
-      <motion.div
-        className="absolute bottom-[25%] left-[10%] h-60 w-60 rounded-full bg-accent/30 blur-[80px]"
-        animate={{ x: transform3.x, y: transform3.y }}
-        transition={transform3.transition}
-      />
-    </>
-  );
-};
-
-
-
-function IntroText({ text, className }: IntroTextProps) {
-  const ref = useRef(null);
-  const isInView = framerUseInView(ref, { once: true, amount: 0.2 });
-
-  const textVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.02
-      }
-    }
-  };
-
-  const letterVariants = {
-    hidden: {
-      opacity: 0,
-      y: 20,
-      scale: 0.9
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        damping: 10,
-        stiffness: 100
-      }
-    }
-  };
-
-  return (
-    <motion.p
-      ref={ref}
-      className={`text-md md:text-xl text-primary-text-100 leading-relaxed md:leading-relaxed max-w-4xl ${className}`}
-      initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
-      variants={textVariants}
-    >
-      {text.split("").map((char, index) => (
-        <motion.span
-          key={`${char}-${index}`}
-          variants={letterVariants}
-          className={char === " " ? "inline-block w-[0.3em]" : "inline-block"}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </motion.p>
-  );
-}
-
-
-// Optimize the HeroSection component to avoid heavy initialization
 const HeroSection = ({
   name = 'Saswat Ranjan',
-  title = 'MERN/Front-End Developer',
-  introduction = "Hi, I'm Saswat Ranjan. A passionate Front-end React Developer & MERN stack Developer based in Bhubaneswar.",
+  title = 'MERN/APP Developer',
+  introduction = "Hi, I'm Saswat Ranjan. SDE-1",
   backgroundPattern = true,
 }: HeroSectionProps) => {
   const { theme } = useTheme();
@@ -167,21 +44,20 @@ const HeroSection = ({
   const projectBtnRef = useRef<HTMLButtonElement>(null);
   const resumeBtnRef = useRef<HTMLAnchorElement>(null);
   const controls = useAnimation();
-
-  const isTextInView = framerUseInView(textRef, { once: false, amount: 0.3 });
   const mousePositionRef = useRef<MousePosition>({ x: 0, y: 0 });
 
   const [techIcons, setTechIcons] = useState<TechIcon[]>([]);
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
 
+  const isTextInView = framerUseInView(textRef, { once: false, amount: 0.3 });
+
   useEffect(() => {
+    // Load icons
     try {
       const icons = generateTechIcons();
       if (icons?.length) {
         setTechIcons(icons);
-      } else {
-        throw new Error('Empty icons array');
-      }
+      } else throw new Error('Empty icons array');
     } catch (err) {
       console.error('Fallback to default icons due to:', err);
       setTechIcons([
@@ -200,27 +76,16 @@ const HeroSection = ({
       ]);
     }
 
+    // Delay animations
     const timer = setTimeout(() => {
       setAnimationsEnabled(true);
     }, 800);
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
+    // Mouse tracking + magnetic effect
     const handleMouseMove = (e: MouseEvent) => {
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  useEffect(() => {
-    if (isTextInView) controls.start('visible');
-  }, [isTextInView, controls]);
-
-  useEffect(() => {
     const applyMagneticEffect = (btnRef: React.RefObject<HTMLElement>) => {
       const btn = btnRef.current;
       if (!btn) return;
@@ -267,15 +132,23 @@ const HeroSection = ({
       };
     };
 
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
     const cleanupProject = applyMagneticEffect(projectBtnRef);
     const cleanupResume = applyMagneticEffect(resumeBtnRef);
 
     return () => {
+      clearTimeout(timer);
+      window.removeEventListener('mousemove', handleMouseMove);
       cleanupProject?.();
       cleanupResume?.();
     };
   }, []);
 
+  useEffect(() => {
+    if (isTextInView) controls.start('visible');
+  }, [isTextInView, controls]);
+
+  // Text animation variants
   const textVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i: number) => ({
@@ -290,30 +163,14 @@ const HeroSection = ({
   };
 
   const particles = useMemo(() => {
-    const p = [];
-    for (let i = 0; i < 100; i++) {
-      p.push({
-        posX: Math.random() * 100,
-        posY: Math.random() * 100,
-        size: Math.random() * 2, // 4px to 12px
-        color: `#fff`,
-      });
-    }
-    return p;
+    return Array.from({ length: 100 }, () => ({
+      posX: Math.random() * 100,
+      posY: Math.random() * 100,
+      size: Math.random() * 2,
+      color: `#fff`,
+    }));
   }, []);
 
-  const stars = useMemo(
-    () =>
-      Array.from({ length: 40 }, (_, i) => ({
-        id: i,
-        size: Math.random() * 2 + 1,
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-        delay: Math.random() * 5,
-        duration: Math.random() * 2 + 1,
-      })),
-    []
-  );
 
   return (
     <section
@@ -321,27 +178,30 @@ const HeroSection = ({
       className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-background py-20 px-4 sm:px-6 lg:px-8"
     >
       {animationsEnabled && theme === 'dark' && (
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          {particles.map((p, i) => (
-            <Particle
-              key={i}
-              posX={p.posX}
-              posY={p.posY}
-              size={p.size}
-              color={p.color}
-            />
-          ))}
-          <StarryHeroBackground />
-          {Array.from({ length: 12 }).map((_, i) => (
-            <Meteor
-              key={i}
-              left={`${Math.random() * 100}%`}
-              delay={Math.random() * 5}
-              height={Math.random() * 40 + 30} // min 10px height
-              width={1} // thin like a shooting star
-            />
-          ))}
-        </div>
+        <ParallaxLayer strength={10}>
+          <div className="absolute inset-0 z-0 pointer-events-none">
+            {particles.map((p, i) => (
+              <Particle
+                key={i}
+                posX={p.posX}
+                posY={p.posY}
+                size={p.size}
+                color={p.color}
+              />
+            ))}
+            <StarryHeroBackground />
+            {Array.from({ length: 12 }).map((_, i) => (
+              <Meteor
+                key={i}
+                left={`${Math.random() * 100}%`}
+                delay={Math.random() * 5}
+                height={Math.random() * 40 + 30}
+                width={1}
+              />
+            ))}
+          </div>
+        </ParallaxLayer>
+
       )}
       {animationsEnabled && theme !== 'dark' && <DayTimeParticles />}
 
@@ -376,10 +236,14 @@ const HeroSection = ({
       )}
 
       {animationsEnabled && techIcons.length > 0 && (
-        <FloatingTechIcons
-          techIcons={techIcons}
-          mousePositionRef={mousePositionRef}
-        />
+        <ParallaxLayer strength={10}>
+
+          <FloatingTechIcons
+            techIcons={techIcons}
+            mousePositionRef={mousePositionRef}
+          />
+        </ParallaxLayer>
+
       )}
 
       <div
@@ -393,7 +257,6 @@ const HeroSection = ({
           variants={textVariants}
           className="inline-block px-6 py-2 border border-primary/30 rounded-full text-sm font-medium text-primary dark:text-primary-foreground mb-4 backdrop-blur-sm relative overflow-hidden group hover:border-primary transition-colors duration-300"
         >
-          <ShapeBlur />
           <motion.span
             className="mr-2 inline-block"
             animate={{ rotate: [0, 15] }}
@@ -440,7 +303,7 @@ const HeroSection = ({
   );
 };
 
-// Simplified StarryHeroBackground with minimal DOM elements and optimized animations
+
 
 
 export default HeroSection;
