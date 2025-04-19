@@ -42,14 +42,6 @@ export const otherSkills: Skill[] = [
   { name: "Java", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" }
 ];
 
-// Proficiency levels
-export const proficiencyLevels: ProficiencyLevel[] = [
-  { name: "Frontend Development", percentage: 90 },
-  { name: "Backend Development", percentage: 85 },
-  { name: "UI/UX Design", percentage: 80 },
-  { name: "Mobile Development", percentage: 75 },
-  { name: "DevOps", percentage: 70 },
-];
 
 // Get all skills combined
 export const getAllSkills = () => {
