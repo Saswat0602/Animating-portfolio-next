@@ -13,6 +13,7 @@ import StarryHeroBackground from "@/widget/StarryHeroBackground";
 import DayTimeParticles from "@/widget/DayTimeParticles";
 import ActionButtons from "@/widget/ActionButtons";
 import FloatingTechIcons from "@/widget/FloatingTechIcons";
+import Meteor from "@/widget/Meteor";
 
 interface HeroSectionProps {
   name?: string;
@@ -266,33 +267,6 @@ const Star = ({ size, top, left, delay, duration }: { size: number; top: string;
   );
 };
 
-// Meteor component for night mode effect
-const Meteor = ({ top, left, size, angle, delay }: { top: string; left: string; size: number; angle: number; delay: number }) => {
-  return (
-    <motion.div
-      className="absolute h-px bg-white"
-      style={{
-        width: `${Math.random() * 100 + 50}px`,
-        top,
-        left,
-        rotate: `${angle}deg`,
-        opacity: 0,
-      }}
-      animate={{
-        opacity: [0, 1, 0],
-        x: [0, 200, 400],
-        y: [0, 200, 400],
-      }}
-      transition={{
-        duration: 1.5,
-        delay,
-        repeat: Infinity,
-        repeatDelay: Math.random() * 10 + 5,
-      }}
-    />
-  );
-};
-
 const NameAndTitle = ({ name, title }: { name: string; title: string }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -507,6 +481,20 @@ const HeroSection = ({
     return p;
   }, []);
 
+  const meteors = useMemo(
+    () =>
+      Array.from({ length: 4 }, (_, i) => ({
+        id: i,
+        top: `${Math.random() * 80}%`,
+        left: `${Math.random() * 80}%`,
+        size: Math.random() * 80 + 30,
+        //  angle: Math.random() * 45 - 20, // Slight diagonal
+
+        delay: Math.random() * 10,
+      })),
+    []
+  );
+
   return (
     <section
       ref={heroRef}
@@ -524,6 +512,16 @@ const HeroSection = ({
             />
           ))}
           <StarryHeroBackground />
+          {Array.from({ length: 12 }).map((_, i) => (
+            <Meteor
+              key={i}
+              left={`${Math.random() * 100}%`}
+              delay={Math.random() * 5}
+              height={Math.random() * 40 + 30} // min 10px height
+              width={1} // thin like a shooting star
+            />
+          ))}
+
 
         </div>
       )}
