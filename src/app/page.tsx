@@ -17,7 +17,7 @@ const ProjectsSection = lazy(() => import('@/components/ProjectsSection'));
 const ContactSection = lazy(() => import('@/components/ContactSection'));
 const Footer = lazy(() => import('@/components/Footer'));
 const HeroSection = lazy(() => import("../components/HeroSection"));
-
+import StarryHeroBackground from "@/widget/StarryHeroBackground";
 const BlurCanvas = ({className}: {className?: string}) => {
   return (
     <div className={`absolute inset-0 -z-10 opacity-20 overflow-hidden ${className}`}>
@@ -259,7 +259,7 @@ export default function Home() {
   return (
     <main ref={mainRef} className="min-h-screen bg-background relative overflow-hidden">
       <Navbar />
-
+      <StarryHeroBackground/>
       <div 
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left will-change-transform" 
         style={{ transform: `scaleX(${scrollYProgress.get()})` }}

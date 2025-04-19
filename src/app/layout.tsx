@@ -5,12 +5,9 @@ import "./globals.css";
 import dynamic from 'next/dynamic';
 import { cn } from "@/lib/utils";
 import Script from "next/script";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 
 // Lazy load non-critical components
 const CustomCursor = dynamic(() => import("@/components/CustomCursor"), { ssr: false });
-const TempoInit = dynamic(() => import('@/components/tempo-init').then(mod => ({ default: mod.TempoInit })), { ssr: false });
-const StarryBackground = dynamic(() => import('@/components/StarryBackground').then(mod => ({ default: mod.StarryBackground })), { ssr: false });
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -79,20 +76,15 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <div className="fixed inset-0 w-full h-full overflow-hidden -z-10 pointer-events-none starry-container">
-            <StarryBackground className="w-full h-full" />
-          </div>
+      
           
-          {/* Client-side only rendering for the cursor */}
           <CustomCursor enabled={true} />
           
-          {/* Main content with improved paint performance */}
           <main className="overflow-hidden will-change-transform">
             {children}
           </main>
           
-          {/* Deferred non-critical component */}
-          <TempoInit />
+ 
         </ThemeProvider>
       </body>
     </html>
