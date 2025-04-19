@@ -7,22 +7,17 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
-import { gsap } from "gsap";
 
-// Import custom hooks
 import useElementScroll from '../hooks/useElementScroll';
-import useScrollAnimation from '../hooks/useScrollAnimation';
 
-// Import components
-const OptimizedHeroSection = lazy(() => import("../components/OptimizedHeroSection"));
 const SkillsSection = lazy(() => import("../components/SkillsSection"));
 const ExperienceSection = lazy(() => import("../components/ExperienceSection"));
 import Navbar from "../components/Navbar";
 const ProjectsSection = lazy(() => import('@/components/ProjectsSection'));
 const ContactSection = lazy(() => import('@/components/ContactSection'));
 const Footer = lazy(() => import('@/components/Footer'));
+const HeroSection = lazy(() => import("../components/HeroSection"));
 
-// Blur canvas component for background effects
 const BlurCanvas = ({className}: {className?: string}) => {
   return (
     <div className={`absolute inset-0 -z-10 opacity-20 overflow-hidden ${className}`}>
@@ -44,20 +39,16 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   
-  // Setup references
   const mainRef = useRef<HTMLElement>(null);
   const experienceSectionRef = useRef<HTMLDivElement>(null);
   const skillsSectionRef = useRef<HTMLDivElement>(null);
   const aboutSectionRef = useRef<HTMLDivElement>(null);
   
-  // Initialize only critical components immediately, defer the rest
   useEffect(() => {
-    // Basic content becomes visible quickly
     const mountTimeout = setTimeout(() => {
       setIsMounted(true);
     }, 100);
     
-    // Defer full loading to improve perceived performance
     const loadTimeout = setTimeout(() => {
       setIsFullyLoaded(true);
     }, 300);
@@ -68,19 +59,15 @@ export default function Home() {
     };
   }, []);
 
-  // Initialize scroll animations only when fully loaded
   useEffect(() => {
     if (isFullyLoaded) {
-      // Initialize scroll animations after full load
       const initScrollAnimations = () => {
         try {
-          // Add optimized scroll animation initialization here if needed
         } catch (error) {
           console.error('Error initializing scroll animations:', error);
         }
       };
       
-      // Use requestIdleCallback for non-critical operations
       if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
         (window as any).requestIdleCallback(initScrollAnimations);
       } else {
@@ -89,12 +76,10 @@ export default function Home() {
     }
   }, [isFullyLoaded]);
   
-  // Optimize animation performance with reduced motion when possible
   const prefersReducedMotion = typeof window !== 'undefined' 
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
     : false;
   
-  // Setup all Framer Motion animations with optimized settings
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { 
     stiffness: prefersReducedMotion ? 170 : 100, 
@@ -103,12 +88,9 @@ export default function Home() {
   });
   const progressOpacity = useTransform(smoothProgress, [0, 0.05], [1, 0]);
 
-  // Use custom hook for experience section scroll progress - always call the hook
   const experienceScroll = useElementScroll(experienceSectionRef);
-  // Then conditionally use the result if needed
   const experienceScrollProgress = isMounted ? experienceScroll : 0;
 
-  // Portfolio data
   const portfolioData = {
     name: "Saswat Ranjan",
     location: "Bhubaneswar, Odisha, India",
@@ -218,11 +200,9 @@ export default function Home() {
     },
   };
 
-  // Simple loading spinner
   if (!isMounted) {
     return (
       <div className="fixed inset-0 bg-background flex flex-col items-center justify-center overflow-hidden">
-        {/* Logo animation */}
         <div className="relative mb-8">
           <div className="text-4xl md:text-5xl font-bold relative z-10">
             <span className="text-primary animate-pulse">Saswat</span>
@@ -231,7 +211,6 @@ export default function Home() {
           <div className="absolute -inset-6 bg-primary/5 rounded-full blur-xl animate-pulse"></div>
         </div>
         
-        {/* Animated loader */}
         <div className="flex space-x-2 mb-8">
           {[0, 1, 2, 3, 4].map((i) => (
             <div 
@@ -244,12 +223,10 @@ export default function Home() {
           ))}
         </div>
         
-        {/* Loading text */}
         <p className="text-sm text-muted-foreground animate-fadeIn">
           Loading amazing things...
         </p>
         
-        {/* Add loading animation keyframes */}
         <style>{`
           @keyframes bounceLoader {
             0%, 100% {
@@ -283,13 +260,11 @@ export default function Home() {
     <main ref={mainRef} className="min-h-screen bg-background relative overflow-hidden">
       <Navbar />
 
-      {/* Simplified scroll indicator - using transform for better performance */}
       <div 
         className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left will-change-transform" 
         style={{ transform: `scaleX(${scrollYProgress.get()})` }}
       />
 
-      {/* Wrap lazy-loaded components in Suspense */}
       <Suspense fallback={
         <div className="h-screen flex flex-col items-center justify-center">
           <div className="relative mb-4">
@@ -324,11 +299,8 @@ export default function Home() {
         </div>
       }>
         {/* Hero Section */}
-        <OptimizedHeroSection
-          name={portfolioData.name}
-          title={portfolioData.title}
-          introduction={portfolioData.introduction}
-        />
+  
+        <HeroSection/>
 
         {/* About Section - with optimized animations */}
         <section
@@ -545,29 +517,23 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Projects section */}
         <div id="projects">
           <ProjectsSection projects={portfolioData.projects} />
         </div>
 
-        {/* Skills section */}
         <div ref={skillsSectionRef}>
           <SkillsSection />
         </div>
 
-        {/* Experience section */}
         <div ref={experienceSectionRef}>
           <ExperienceSection id="experience-section" />
         </div>
 
-        {/* Contact section */}
         <ContactSection id="contact-section" />
 
-        {/* Footer */}
         <Footer />
       </Suspense>
 
-      {/* Background effects - only shown on larger screens and when fully loaded */}
       {isFullyLoaded && !prefersReducedMotion && (
         <BlurCanvas className="hidden md:block" />
       )}

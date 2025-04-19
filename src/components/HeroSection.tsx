@@ -12,15 +12,11 @@ import {
   useScroll,
   useAnimationControls,
 } from "framer-motion";
-import { gsap } from "gsap";
 import { Button } from "./ui/button";
 import { ArrowRight, Download, Github } from "lucide-react";
 import { useTheme } from 'next-themes';
 import Image from "next/image";
-import { CSSProperties } from "react";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useTypewriter, Cursor } from 'react-simple-typewriter';
 import { throttle } from "lodash";
 import { generateTechIcons, TechIcon } from "@/data/techIconsData";
 
@@ -351,7 +347,6 @@ const FloatingTechIcons: React.FC<FloatingTechIconsProps> = ({ techIcons, mouseP
                 onError={(e) => {
                   console.error(`Failed to load icon: ${icon.name}`);
                   const imgElement = e.currentTarget as HTMLImageElement;
-                  // Special handling for AWS icon
                   if (icon.name === "aws") {
                     imgElement.src = "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg";
                   }
@@ -368,17 +363,7 @@ const FloatingTechIcons: React.FC<FloatingTechIconsProps> = ({ techIcons, mouseP
   );
 };
 
-// Function to fix useInView usage
-const useInView = (ref: React.RefObject<Element>, options?: { once?: boolean; amount?: number }) => {
-  const [inView, setInView] = useState(false);
-  const inViewRef = framerUseInView(ref, options);
-  
-  useEffect(() => {
-    setInView(inViewRef);
-  }, [inViewRef]);
-  
-  return [ref, inView];
-};
+
 
 function IntroText({ text, className }: IntroTextProps) {
   const ref = useRef(null);
@@ -433,100 +418,7 @@ function IntroText({ text, className }: IntroTextProps) {
   );
 }
 
-const Particles = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
-  
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-        setMousePosition({ x, y });
-      }
-    };
-    
-    const handleMouseEnter = () => setIsHovering(true);
-    const handleMouseLeave = () => setIsHovering(false);
-    
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener("mousemove", handleMouseMove);
-      container.addEventListener("mouseenter", handleMouseEnter);
-      container.addEventListener("mouseleave", handleMouseLeave);
-    }
-    
-    return () => {
-      if (container) {
-        container.removeEventListener("mousemove", handleMouseMove);
-        container.removeEventListener("mouseenter", handleMouseEnter);
-        container.removeEventListener("mouseleave", handleMouseLeave);
-      }
-    };
-  }, []);
-  
-  const particles = useMemo(() => {
-    return Array.from({ length: 40 }).map((_, i) => ({
-      id: i,
-      size: Math.random() * 3 + 1,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      opacity: Math.random() * 0.5 + 0.1,
-      speed: Math.random() * 0.4 + 0.1,
-      depth: Math.random(),
-    }));
-  }, []);
-  
-  return (
-    <div 
-      ref={containerRef}
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-    >
-      {particles.map((particle) => {
-        // Calculate influence based on mouse position and particle depth
-        const influenceX = isHovering ? mousePosition.x * 20 * particle.depth : 0;
-        const influenceY = isHovering ? mousePosition.y * 20 * particle.depth : 0;
-        
-        return (
-          <motion.div
-            key={particle.id}
-            className="absolute rounded-full bg-primary"
-            style={{
-              width: particle.size,
-              height: particle.size,
-              opacity: particle.opacity,
-              top: `${particle.y}%`,
-              left: `${particle.x}%`,
-              zIndex: 1,
-            }}
-            animate={{
-              x: influenceX,
-              y: influenceY,
-              opacity: [particle.opacity, particle.opacity * 0.6, particle.opacity],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              x: { type: "spring", stiffness: 50, damping: 20 },
-              y: { type: "spring", stiffness: 50, damping: 20 },
-              opacity: { 
-                duration: 3 + particle.speed * 2, 
-                repeat: Infinity, 
-                repeatType: "reverse" 
-              },
-              scale: { 
-                duration: 4 + particle.speed * 3, 
-                repeat: Infinity, 
-                repeatType: "reverse" 
-              },
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-};
+
 
 // Star component for night mode effect
 const Star = ({ size, top, left, delay, duration }: { size: number; top: string; left: string; delay: number; duration: number }) => {
@@ -757,113 +649,7 @@ const ActionButtons = ({
     </motion.div>
   );
 };
-
-const HeroContent = () => {
-  const ref = useRef(null);
-  const isInView = framerUseInView(ref, { once: false, amount: 0.1 });
-  const mainControls = useAnimation();
-  
-  useEffect(() => {
-    if (isInView) {
-      mainControls.start("visible");
-    } else {
-      mainControls.start("hidden");
-    }
-  }, [isInView, mainControls]);
-  
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        staggerChildren: 0.15,
-        delayChildren: 0.3,
-        duration: 0.8,
-        ease: "easeOut"
-      }
-    }
-  };
-  
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { 
-        duration: 0.8,
-        ease: [0.25, 0.1, 0.25, 1.0] 
-      }
-    }
-  };
-
-  const [text] = useTypewriter({
-    words: ['Hi, I\'m Saswat Ranjan. A passionate Front-end React Developer & MERN stack Developer based in Bhubaneswar.'],
-    loop: true,
-    typeSpeed: 40,
-    deleteSpeed: 20,
-    delaySpeed: 2500,
-  });
-
-  const projectsButtonRef = useRef<HTMLButtonElement>(null);
-  const resumeButtonRef = useRef<HTMLAnchorElement>(null);
-  
-  // Static name for animation
-  const nameText = "Saswat Ranjan";
-
-  return (
-    <motion.div 
-      ref={ref}
-      className="relative z-20 flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-12 px-4 text-center"
-      initial="hidden"
-      animate={mainControls}
-      variants={containerVariants}
-    >
-      <motion.div 
-        variants={itemVariants}
-        className="w-full max-w-4xl mx-auto"
-      >
-        <h1 className="mb-2 bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-5xl font-bold text-transparent sm:text-6xl md:mb-4 md:text-7xl lg:text-8xl">
-          {nameText.split("").map((letter: string, i: number) => (
-            <motion.span
-              key={i}
-              className="inline-block"
-              whileHover={{ 
-                scale: 1.2, 
-                color: "var(--primary)",
-                transition: { duration: 0.2 } 
-              }}
-              style={{ display: "inline-block" }}
-            >
-              {letter === " " ? "\u00A0" : letter}
-            </motion.span>
-          ))}
-        </h1>
-      </motion.div>
-      
-      <motion.h2 
-        variants={itemVariants}
-        className="mb-6 text-xl font-medium text-muted-foreground sm:text-2xl md:mb-8 md:text-3xl lg:text-4xl"
-      >
-        MERN/Front-End Developer
-      </motion.h2>
-      
-      <motion.div 
-        variants={itemVariants}
-        className="mb-8 max-w-3xl text-base text-muted-foreground sm:text-lg md:mb-10 md:text-xl"
-      >
-        <span>{text}</span>
-        <Cursor cursorStyle="●" cursorColor="#3b82f6" />
-      </motion.div>
-      
-      <motion.div variants={itemVariants} className="w-full max-w-md mx-auto">
-        <ActionButtons 
-          projectsButtonRef={projectsButtonRef}
-          resumeButtonRef={resumeButtonRef}
-        />
-      </motion.div>
-    </motion.div>
-  );
-};
+;
 
 // Add day-time particles component with improved performance
 const DayTimeParticles = () => {
@@ -1089,139 +875,116 @@ const DayTimeParticles = () => {
 
 // Optimize the HeroSection component to avoid heavy initialization
 const HeroSection = ({
-  name = "Saswat Ranjan",
-  title = "MERN/Front-End Developer",
+  name = 'Saswat Ranjan',
+  title = 'MERN/Front-End Developer',
   introduction = "Hi, I'm Saswat Ranjan. A passionate Front-end React Developer & MERN stack Developer based in Bhubaneswar.",
   backgroundPattern = true,
 }: HeroSectionProps) => {
   const { theme } = useTheme();
   const heroRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-  const isTextInView = framerUseInView(textRef, { once: false, amount: 0.3 });
-  const controls = useAnimation();
   const patternRef = useRef<HTMLDivElement>(null);
   const projectBtnRef = useRef<HTMLButtonElement>(null);
   const resumeBtnRef = useRef<HTMLAnchorElement>(null);
-  
-  // Use ref instead of state to avoid re-renders
+  const controls = useAnimation();
+
+  const isTextInView = framerUseInView(textRef, { once: false, amount: 0.3 });
   const mousePositionRef = useRef<MousePosition>({ x: 0, y: 0 });
   const { position, smoothPosition } = useSmoothMousePosition();
-  
-  // Pre-generate tech icons with state to allow refreshing
+
   const [techIcons, setTechIcons] = useState<TechIcon[]>([]);
-  
-  // Add deferred loading state to improve initial render
   const [animationsEnabled, setAnimationsEnabled] = useState(false);
-  
-  // Update tech icons on component mount
+
   useEffect(() => {
     try {
       const icons = generateTechIcons();
-      if (icons && icons.length > 0) {
+      if (icons?.length) {
         setTechIcons(icons);
       } else {
-        console.error("Failed to generate tech icons: empty array returned");
-        // Fallback to default icons if the function returns empty
-        setTechIcons([
-          { name: "react", x: 75, y: 20, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-          { name: "typescript", x: 25, y: 65, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" }
-        ]);
+        throw new Error('Empty icons array');
       }
-    } catch (error) {
-      console.error("Error generating tech icons:", error);
-      // Fallback to default icons in case of error
+    } catch (err) {
+      console.error('Fallback to default icons due to:', err);
       setTechIcons([
-        { name: "react", x: 75, y: 20, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" },
-        { name: "typescript", x: 25, y: 65, src: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" }
+        {
+          name: 'react',
+          x: 75,
+          y: 20,
+          src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
+        },
+        {
+          name: 'typescript',
+          x: 25,
+          y: 65,
+          src: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg',
+        },
       ]);
     }
-    
-    // Defer non-critical animations to improve initial load performance
+
     const timer = setTimeout(() => {
       setAnimationsEnabled(true);
-    }, 800); // Add a short delay to prioritize critical content
-    
+    }, 800);
+
     return () => clearTimeout(timer);
   }, []);
-  
-  // Update mouse position on mouse move
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Update ref directly without state for better performance
       mousePositionRef.current = { x: e.clientX, y: e.clientY };
     };
-    
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Text animation when in view
   useEffect(() => {
-    if (isTextInView) {
-      controls.start("visible");
-    }
+    if (isTextInView) controls.start('visible');
   }, [isTextInView, controls]);
 
-  // Optimized magnetic effect for buttons
   useEffect(() => {
-    const applyMagneticEffect = (
-      btnRef: React.RefObject<HTMLElement>,
-    ) => {
-      if (!btnRef.current) return;
-
+    const applyMagneticEffect = (btnRef: React.RefObject<HTMLElement>) => {
       const btn = btnRef.current;
+      if (!btn) return;
+
       let isHovering = false;
       let rafId: number | null = null;
-      
-      const updateButtonPosition = () => {
-        if (!isHovering || !btn) return;
-        
+
+      const updatePosition = () => {
+        if (!isHovering) return;
+
         const rect = btn.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
-        const x = mousePositionRef.current.x;
-        const y = mousePositionRef.current.y;
-        
-        const deltaX = x - centerX;
-        const deltaY = y - centerY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
+        const { x, y } = mousePositionRef.current;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
         if (distance < 100) {
-          const moveX = deltaX * 0.2; // Reduced intensity
-          const moveY = deltaY * 0.2; // Reduced intensity
-          btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
-          btn.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+          btn.style.transform = `translate(${dx * 0.2}px, ${dy * 0.2}px)`;
         }
-        
-        rafId = requestAnimationFrame(updateButtonPosition);
+
+        rafId = requestAnimationFrame(updatePosition);
       };
 
-      const handleMouseEnter = () => {
+      const enter = () => {
         isHovering = true;
-        if (rafId === null) {
-          rafId = requestAnimationFrame(updateButtonPosition);
-        }
-      };
-      
-      const handleMouseLeave = () => {
-        isHovering = false;
-        if (rafId !== null) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-        btn.style.transform = 'translate(0px, 0px)';
-        btn.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        rafId = requestAnimationFrame(updatePosition);
       };
 
-      btn.addEventListener("mouseenter", handleMouseEnter);
-      btn.addEventListener("mouseleave", handleMouseLeave);
+      const leave = () => {
+        isHovering = false;
+        btn.style.transform = 'translate(0, 0)';
+        if (rafId) cancelAnimationFrame(rafId);
+      };
+
+      btn.addEventListener('mouseenter', enter);
+      btn.addEventListener('mouseleave', leave);
 
       return () => {
-        if (rafId !== null) {
-          cancelAnimationFrame(rafId);
-        }
-        btn.removeEventListener("mouseenter", handleMouseEnter);
-        btn.removeEventListener("mouseleave", handleMouseLeave);
+        if (rafId) cancelAnimationFrame(rafId);
+        btn.removeEventListener('mouseenter', enter);
+        btn.removeEventListener('mouseleave', leave);
       };
     };
 
@@ -1229,12 +992,11 @@ const HeroSection = ({
     const cleanupResume = applyMagneticEffect(resumeBtnRef);
 
     return () => {
-      if (cleanupProject) cleanupProject();
-      if (cleanupResume) cleanupResume();
+      cleanupProject?.();
+      cleanupResume?.();
     };
   }, []);
 
-  // Text animation variants
   const textVariants = {
     hidden: { opacity: 0, y: 30 },
     visible: (i: number) => ({
@@ -1248,34 +1010,54 @@ const HeroSection = ({
     }),
   };
 
+  const particles = useMemo(() => {
+    const p = [];
+    for (let i = 0; i < 100; i++) {
+      p.push({
+        posX: Math.random() * 100,
+        posY: Math.random() * 100,
+        size: Math.random() * 2, // 4px to 12px
+        color: `#fff`,
+      });
+    }
+    return p;
+  }, []);
+
   return (
     <section
       ref={heroRef}
       className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-background py-20 px-4 sm:px-6 lg:px-8"
     >
-      {/* Background effects based on theme */}
-      {animationsEnabled && theme === 'dark' ? (
-        // Dark theme stars background
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <StarryHeroBackground />
-        </div>
-      ) : animationsEnabled && (
-        // Day mode background
-        <DayTimeParticles />
+      {animationsEnabled && theme === 'dark' && (
+             <div className="absolute inset-0 z-0 pointer-events-none">
+             {particles.map((p, i) => (
+               <Particle
+                 key={i}
+                 posX={p.posX}
+                 posY={p.posY}
+                 size={p.size}
+                 color={p.color}
+               />
+             ))}
+        <StarryHeroBackground />
+           </div>
       )}
-      
-      {/* Background pattern with reduced complexity */}
+      {animationsEnabled && theme !== 'dark' && <DayTimeParticles />}
+
       {backgroundPattern && animationsEnabled && (
         <motion.div
           ref={patternRef}
           className="absolute inset-0 z-0 opacity-5 dark:opacity-3 pointer-events-none will-change-transform"
-          initial={{ x: 0, y: 0 }}
-          style={{ transform: 'translate(0px, 0px)' }}
         >
-          <div className="grid grid-cols-[repeat(8,1fr)] grid-rows-[repeat(8,1fr)] h-full w-full">
+          <div className="grid grid-cols-8 grid-rows-8 h-full w-full">
             {Array.from({ length: 16 }).map((_, i) => (
               <motion.div
                 key={i}
+                className="rounded-full border border-primary/10"
+                style={{
+                  gridColumn: `${(i % 8) + 1} / span 1`,
+                  gridRow: `${Math.floor(i / 8) + 1} / span 1`,
+                }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{
                   scale: Math.random() * 0.7 + 0.2,
@@ -1284,12 +1066,7 @@ const HeroSection = ({
                 transition={{
                   duration: 1.5,
                   delay: i * 0.02,
-                  ease: "easeOut",
-                }}
-                className="rounded-full border border-primary/10"
-                style={{
-                  gridColumn: `${(i % 8) + 1} / span 1`,
-                  gridRow: `${Math.floor(i / 8) + 1} / span 1`,
+                  ease: 'easeOut',
                 }}
               />
             ))}
@@ -1297,9 +1074,11 @@ const HeroSection = ({
         </motion.div>
       )}
 
-      {/* Floating tech icons with optimized rendering */}
       {animationsEnabled && techIcons.length > 0 && (
-        <FloatingTechIcons techIcons={techIcons} mousePositionRef={mousePositionRef} />
+        <FloatingTechIcons
+          techIcons={techIcons}
+          mousePositionRef={mousePositionRef}
+        />
       )}
 
       <div
@@ -1317,101 +1096,45 @@ const HeroSection = ({
           <motion.span
             className="mr-2 inline-block"
             animate={{ rotate: [0, 15] }}
-            transition={{ 
+            transition={{
               rotate: {
-                repeat: Infinity, 
-                repeatType: "reverse", 
-                duration: 0.75, 
-                repeatDelay: 0.5
-              }
+                repeat: Infinity,
+                repeatType: 'reverse',
+                duration: 0.75,
+                repeatDelay: 0.5,
+              },
             }}
           >
             👋
           </motion.span>
-          <span className="relative z-10 group-hover:text-primary transition-colors duration-300">Welcome to my portfolio</span>
-          <motion.div 
+          <span className="relative z-10 group-hover:text-primary transition-colors duration-300">
+            Welcome to my portfolio
+          </span>
+          <motion.div
             className="absolute inset-0 bg-primary/10 -z-10 group-hover:bg-primary/20 transition-colors duration-300"
-            initial={{ x: "-100%" }}
-            animate={{ x: "100%" }}
-            transition={{ 
-              duration: 2, 
-              ease: "easeInOut", 
-              repeat: Infinity, 
-              repeatDelay: 3 
+            initial={{ x: '-100%' }}
+            animate={{ x: '100%' }}
+            transition={{
+              duration: 2,
+              ease: 'easeInOut',
+              repeat: Infinity,
+              repeatDelay: 3,
             }}
           />
         </motion.div>
 
-        {/* Name with enhanced pixelate animation effect */}
         <NameAndTitle name={name} title={title} />
 
-        {/* Introduction with enhanced pixelate effect */}
-        <IntroText text={introduction} className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-6 leading-relaxed hover:text-foreground transition-colors duration-300" />
+        <IntroText
+          text={introduction}
+          className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mt-6 leading-relaxed hover:text-foreground transition-colors duration-300"
+        />
 
-        {/* Buttons with shape blur effects - smoother animations */}
         <ActionButtons
           projectsButtonRef={projectBtnRef}
           resumeButtonRef={resumeBtnRef}
         />
-
-        <motion.div
-          initial="hidden"
-          animate={controls}
-          custom={5}
-          variants={textVariants}
-          className="flex justify-center mt-12 opacity-80"
-          whileHover={{ 
-            scale: 1.1,
-            opacity: 1,
-            transition: { duration: 0.3 }
-          }}
-        >
-          <motion.div
-            className="flex items-center gap-2 hover:text-primary transition-colors duration-300"
-            animate={{ y: [0, 8] }}
-            transition={{
-              y: {
-                repeat: Infinity,
-                repeatType: "reverse",
-                duration: 1,
-                ease: "easeInOut",
-              }
-            }}
-          >
-            <div className="h-10 w-[1px] bg-muted-foreground/50" />
-            <span className="text-sm text-muted-foreground">Scroll Down</span>
-          </motion.div>
-        </motion.div>
       </div>
-
-      {/* Optimized floating elements that follow mouse */}
-      {animationsEnabled && (
-        <motion.div
-          className="absolute pointer-events-none w-60 h-60 rounded-full bg-gradient-to-r from-primary/5 to-transparent blur-3xl will-change-transform"
-          animate={{
-            x: smoothPosition.current.x - 150,
-            y: smoothPosition.current.y - 150,
-            scale: [1, 1.05],
-            opacity: [0.15, 0.25],
-          }}
-          transition={{
-            x: { duration: 0.4, ease: "easeOut" },
-            y: { duration: 0.4, ease: "easeOut" },
-            scale: { 
-              repeat: Infinity, 
-              repeatType: "reverse", 
-              duration: 2,
-              ease: "easeInOut" 
-            },
-            opacity: { 
-              repeat: Infinity, 
-              repeatType: "reverse", 
-              duration: 2,
-              ease: "easeInOut" 
-            },
-          }}
-        />
-      )}
     </section>
   );
 };
