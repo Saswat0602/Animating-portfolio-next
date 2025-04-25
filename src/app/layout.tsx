@@ -36,11 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/fire.svg" type="image/svg+xml" />
         <link rel="shortcut icon" href="/fire.ico" />
 
-        <Script
-          src="https://api.tempolabs.ai/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js"
-          strategy="lazyOnload"
-        />
-
         {PRELOAD_IMAGES.map((url, index) => (
           <link
             key={`preload-${index}`}
